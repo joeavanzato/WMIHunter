@@ -61,9 +61,6 @@ if ($data_types) {
 }
 
 
-$StartTime = Get-Date
-
-
 # $Configuration object is passed to all threads to allow access to variables from within the new thread
 # This variable stores the locations of CSVs for each query-type as well as the count of computers that have already been scanned
 $CurrentDir = Get-Location
@@ -80,7 +77,6 @@ $Configuration.ServerConnections = "$CurrentDir\server_connections.csv"
 $Configuration.NetworkShares = "$CurrentDir\network_shares.csv"
 $Configuration.StartupItems = "$CurrentDir\startup_items.csv"
 $Configuration.SystemAccounts = "$CurrentDir\system_accounts.csv"
-$Configuration.FinishedCount = 0
 
 # $query_table is a hash table (dictionary) which allows for dynamic building of the threaded script block
 # This table is referenced in arguments to data_type and provides the appropriate script block for each piece of data
@@ -98,8 +94,6 @@ network_shares = 'Get-WmiObject Win32_Share -ComputerName $Computer -ErrorAction
 startups = 'Get-WmiObject Win32_StartupCommand -ComputerName $Computer -ErrorAction SilentlyContinue | Select -Property PSComputerName, Caption, Command, Description, Location, Name, User | Export-CSV -NoTypeInformation -Path $Configuration.StartupItems -Append;';
 sys_accounts = 'Get-WmiObject Win32_SystemAccount -ErrorAction SilentlyContinue | Select -Property PSComputerName, Status, SIDType, Name, Domain,LocalAccount, SID | Export-CSV -NoTypeInformation -Path $Configuration.SystemAccounts -Append;'
 }
-
-
 
 function GetDomainComputers {
     # Identify and Retrieve Enabled Computer Users in Current AD Environment
@@ -142,6 +136,7 @@ function ParseDataRequests ([array] $data_string){
 
 
 function LoopAndStartJobs ([array] $Computers, [string] $script){
+    $StartTime = Get-Date
     # Loops through computers array, sets up Runspace Pool, Adds Jobs and Waits for Completion
     # Creating ScriptBlock from passed string
     $ScriptBlock = [ScriptBlock]::Create($script)
@@ -151,8 +146,8 @@ function LoopAndStartJobs ([array] $Computers, [string] $script){
     $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1, $max_threads, $SessionState, $Host)
     $RunspacePool.Open()
 
-    $ComputerCount = $Computers.Count
-    Write-Host "Identified Devices:" $ComputerCount
+    $ComputerCount = 0
+    $Configuration.FinishedCount = 0
     $Jobs = New-Object System.Collections.ArrayList
 
     $Computers | ForEach {
@@ -165,7 +160,9 @@ function LoopAndStartJobs ([array] $Computers, [string] $script){
             Powershell = $PowerShell
         }
         $Jobs.Add($Job) | Out-Null
+        $ComputerCount += 1
     }
+    Write-Host "Started Jobs:" $ComputerCount
 
     while ($Jobs.Runspace.IsCompleted -contains $false) {
         if ($using_gui){
