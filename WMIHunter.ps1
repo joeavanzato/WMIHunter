@@ -193,8 +193,6 @@ function Main {
         if ($gui) {
         $Global:using_gui = $true
         ### GUI SETUP ###
-
-
         Add-Type -AssemblyName System.Windows.Forms
         $bold_font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
         $GUI = New-Object System.Windows.Forms.Form
@@ -206,7 +204,6 @@ function Main {
         $iconBytes = [Convert]::FromBase64String($iconB64)
         $stream        = New-Object IO.MemoryStream($iconBytes, 0, $iconBytes.Length)
         $GUI.Icon     = [System.Drawing.Icon]::FromHandle((New-Object System.Drawing.Bitmap -Argument $stream).GetHIcon())
-
 
         $data_title = New-Object System.Windows.Forms.Label
         $data_title.text = "Data to Collect"
@@ -223,7 +220,6 @@ function Main {
         $thread_label.Location = New-Object System.Drawing.Point(250, 60)
         $thread_label.Font = $bold_font
         $GUI.controls.Add($thread_label)
-
 
         $thread_value = New-Object System.Windows.Forms.TextBox
         $thread_value.text = 16
