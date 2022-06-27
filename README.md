@@ -1,11 +1,19 @@
 # Windows Management Instrumentation Hunter
 Utilize WMI via PowerShell to retrieve and filter information from remote hosts for IR/Hunting purposes.
 
-Requires remote WMI permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
+Data is saved to individual CSV files for each specified data source in the same folder that the script is run from.
+
+WMIHunter requires Remote WMI Query permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
+
+Screenshot of Optional GUI
 
 ![Main GUI](screens/main.png)
 
+Progress Bar During Execution
+
 ![Progress Bar with Device Count](screens/inprog1.png)
+
+Progress Bar when Complete
 
 ![Completed Bar](screens/completed.png)
 ```
@@ -14,9 +22,9 @@ Requires remote WMI permissions for use - typically granted by default to any Lo
 -max_threads = Maximum threads to utilize for asynchronous operations (Optional)
 -computers_file = Location of Text File containing line-delimited hostnames for querying. (Optional)
 -data_types = Array of Data Types to Retrieve
--ip_addresses = Array of IP Addresses to Filter on
--process_names = Array of Process Names to Filter on
--service_names = Array of Service Names to Filter on
+-ip_addresses = Array of IP Addresses to Filter on #TODO
+-process_names = Array of Process Names to Filter on #TODO
+-service_names = Array of Service Names to Filter on #TODO
 
 .\wmih.ps1 -gui - Launch with optional GUI - will eventually ignore all command-line parameters
 .\wmih.ps1 - Will execute with default parameters (16 threads, all data collection enabled, ADSI Searcher to find Computer Users, No IOC filtering)
@@ -38,3 +46,11 @@ Requires remote WMI permissions for use - typically granted by default to any Lo
 * network_shares - Retrieves information about shared resources.
 * startups - Retrieves information about commands run automatically at user logon.
 * sys_accounts - Retrieves information about system accounts.
+
+## TODO
+* Data Filtering at Commandline, GUI
+* Improving GUI Look
+* Icon
+* Additional Commandline Specifications
+* Additional WMI Queries/Data Types 
+* ?
