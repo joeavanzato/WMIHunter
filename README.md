@@ -48,6 +48,8 @@ Progress Bar when Complete
 * sys_accounts - Retrieves information about system accounts.
 
 ## TODO
+* WMI Connection Test on Host and Skip All Queries if Unresponsive
+* Refactor Code to split out functionality better
 * Data Filtering at Commandline, GUI
 * Improving GUI Look
 * Icon
