@@ -16,6 +16,19 @@ Progress Bar During Execution
 Progress Bar when Complete
 
 ![Completed Bar](screens/completed.png)
+
+
+## Why?
+
+Good question - often times I found myself needing to hunt across an environment for a specific indicator - Process Names, Remote Addresses, Service Names, User Accounts, etc.
+
+Many of these investigations took place in low-maturity environments that did not have the capacity, support or logistics in-place to allow forwarding and searching of critical information from servers, endpoints, firewalls, Domain Controllers etc (tsk tsk).
+
+As such, I had a need to rapidly search an environment through readily-available mechanisms - WinRM is great for establishing PowerShell sessions with two major draw-backs - organizations often disable this on servers and it is not enabled by default on workstations.
+
+Therefore, I needed a solution that was typically enabled on as many endpoints as possible - enter WMI via DCOM.  You may yell at me 'Get-WmiObject is deprecated, use Get-CimInstance!' and you are probably correct, but by default Get-CimInstance uses WinRM/WSMAN and I found simply using Get-WmiObject to be a more elegant solution for the time being rather than forcing Get-CimInstance over DCOM.  It is likely I will transition this in the future.
+
+
 ```
 # ARGUMENTS
 -gui = Launch with GUI
