@@ -3,9 +3,14 @@ Utilize WMI via PowerShell to retrieve and filter information from remote hosts 
 
 Requires remote WMI permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
 
+![Main GUI](screens/main.png)
 
+![Progress Bar with Device Count](screens/inprog1.png)
+
+![Completed Bar](screens/completed.png)
 ```
 # ARGUMENTS
+-gui = Launch with GUI
 -max_threads = Maximum threads to utilize for asynchronous operations (Optional)
 -computers_file = Location of Text File containing line-delimited hostnames for querying. (Optional)
 -data_types = Array of Data Types to Retrieve
@@ -13,6 +18,7 @@ Requires remote WMI permissions for use - typically granted by default to any Lo
 -process_names = Array of Process Names to Filter on
 -service_names = Array of Service Names to Filter on
 
+.\wmih.ps1 -gui - Launch with optional GUI - will eventually ignore all command-line parameters
 .\wmih.ps1 - Will execute with default parameters (16 threads, all data collection enabled, ADSI Searcher to find Computer Users, No IOC filtering)
 .\wmih.ps1 -max_threads 20 - Launch with default parameters but increase or decrease the max threads used in the Runspace CreateRunspacePool
 .\wmih.ps1 -data_types processes,connections - Only retrieve running processes and network connections
