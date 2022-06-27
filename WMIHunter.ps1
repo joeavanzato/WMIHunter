@@ -92,7 +92,7 @@ serv_sessions = 'Get-WmiObject Win32_ServerSession -ComputerName $Computer -Erro
 serv_connections = 'Get-WmiObject Win32_ServerConnection -ComputerName $Computer -ErrorAction SilentlyContinue | Select -Property PSComputerName, ActiveTime, ComputerName, ConnectionID, NumberOfFiles, NumberOfUsers, ShareName, UserName | Export-CSV -NoTypeInformation -Path $Configuration.ServerConnections -Append;';
 network_shares = 'Get-WmiObject Win32_Share -ComputerName $Computer -ErrorAction SilentlyContinue | Select -Property PSComputerName, Status, Type, Name, Caption, Description, Path | Export-CSV -NoTypeInformation -Path $Configuration.NetworkShares -Append;';
 startups = 'Get-WmiObject Win32_StartupCommand -ComputerName $Computer -ErrorAction SilentlyContinue | Select -Property PSComputerName, Caption, Command, Description, Location, Name, User | Export-CSV -NoTypeInformation -Path $Configuration.StartupItems -Append;';
-sys_accounts = 'Get-WmiObject Win32_SystemAccount -ErrorAction SilentlyContinue | Select -Property PSComputerName, Status, SIDType, Name, Domain,LocalAccount, SID | Export-CSV -NoTypeInformation -Path $Configuration.SystemAccounts -Append;'
+sys_accounts = 'Get-WmiObject Win32_SystemAccount -ComputerName $Computer -ErrorAction SilentlyContinue | Select -Property PSComputerName, Status, SIDType, Name, Domain,LocalAccount, SID | Export-CSV -NoTypeInformation -Path $Configuration.SystemAccounts -Append;'
 }
 
 function GetDomainComputers {
