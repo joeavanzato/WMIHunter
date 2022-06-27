@@ -63,6 +63,7 @@ Therefore, I needed a solution that was typically enabled on as many endpoints a
 ## TODO
 * WMI Connection Test on Host and Skip All Queries if Unresponsive
 * Refactor Code to split out functionality better
+* Condense GUI code and use looping to automatically generate checkboxes
 * Data Filtering at Commandline, GUI
 * Improving GUI Look
 * Icon
