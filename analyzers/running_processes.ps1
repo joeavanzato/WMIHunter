@@ -29,12 +29,17 @@ $NC.BackColor = "#ffffff"
 [hashtable]$conn_table = @{}
 if ($evidence_array.Contains('network_connections.csv')) {
     Write-Host "Found network_connections.csv, Joining Network Connections on PID"
-    [System.Collections.ArrayList]$connarray = LoadToArray('network_connections.csv')
-    ForEach ($conn in $connarray) {
-        $temp_table = @($conn.LocalPort, $conn.RemotePort, $conn.RemoteAddress, $conn.State)
-        $temp_key = $conn.PSComputerName+"_"+$conn.OwningProcess
+    Import-CSV "$evidence_dir\network_connections.csv" | ForEach-Object {
+        $temp_table = @($_.LocalPort, $_.RemotePort, $_.RemoteAddress, $_.State)
+        $temp_key = $_.PSComputerName+"_"+$_.OwningProcess
         $conn_table.$temp_key = $temp_table
     }
+    #[System.Collections.ArrayList]$connarray = LoadToArray('network_connections.csv')
+    #ForEach ($conn in $connarray) {
+    #    $temp_table = @($conn.LocalPort, $conn.RemotePort, $conn.RemoteAddress, $conn.State)
+    #    $temp_key = $conn.PSComputerName+"_"+$conn.OwningProcess
+    #    $conn_table.$temp_key = $temp_table
+    #}
 }
 
 # Build the Data Table
@@ -284,6 +289,7 @@ $filter_label.Location = New-Object System.Drawing.Point (10,620)
 $NC.Controls.Add($filter_label)
 
 
+Write-Host "Loading DataGrid..."
 #DataGrid GUI Element
 $grid = New-Object System.Windows.Forms.DataGridView
 $grid.Width = 1500
@@ -297,20 +303,24 @@ $grid.DataMember=""
 $grid.DataSource=$nc_table
 $grid.ColumnHeadersVisible = $true
 $grid.AutoSize = $true
-$grid.AutoSizeColumnsMode = 'AllCells'
+#$grid.AutoSizeColumnsMode = 'AllCells'
 #$grid.AllowSorting = $true
 $grid.ReadOnly = $true
 $grid.Size = '1500, 600'
-$grid.AutoSizeColumnsMode='Fill'
-$grid.AutoSizeRowsMode = 'AllCells'
+#$grid.AutoSizeColumnsMode='Fill'
+#$grid.AutoSizeRowsMode = 'AllCells'
 $grid.Anchor = 'Left, Right, Top, Bottom'
+$grid.Columns[0].Width = 120
 
 . ".\helpers\dataresize.ps1"
 #$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
 #$grid.Add_VisibleChanged({AutoResizeColumns $grid})
 $NC.Controls.Add($grid)
 
+. ".\helpers\doublebuffer_grid.ps1"
+
 . ".\helpers\console_manipulation.ps1"
+Enable-DataGridViewDoubleBuffer $grid
 #Hide-Console
 
 [void]$NC.ShowDialog()
