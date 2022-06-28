@@ -180,7 +180,7 @@ $rat_checkbox.add_CheckedChanged({
         ModFilter
     }
     else {
-        $filter_table.$rat_filter = "ProcessName LIKE '%'"
+        $filter_table.rat_filter = "ProcessName LIKE '%'"
         ModFilter
     }
 })
