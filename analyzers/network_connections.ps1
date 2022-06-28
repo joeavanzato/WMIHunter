@@ -99,14 +99,12 @@ $process_name_filter.Width = 140
 $process_name_filter.Height = 20
 $process_name_filter.Text = "Process Name Filter"
 $process_name_filter.Location = New-Object System.Drawing.Point (10, 640)
-$Global:procfilter = "ProcessName LIKE '*''"
+$Global:procfilter = "ProcessName LIKE '*'"
 $process_name_filter.Add_TextChanged({
-$text = $process_name_filter.Text
-$Global:procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
-if ($ipfilter.Contains('LIKE') -or $statefilter.Contains('LIKE')) {
+    $text = $process_name_filter.Text
+    $Global:procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
     $procfilter = $procfilter + " AND "+$ipfilter+ " AND "+$statefilter
-}
-$nc_table.DefaultView.RowFilter = $procfilter
+    $nc_table.DefaultView.RowFilter = $procfilter
 })
 $NC.Controls.Add($process_name_filter)
 
@@ -118,13 +116,10 @@ $ipaddress_filter.Text = "IP Address Filter"
 $ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
 $Global:ipfilter = "LocalAddress LIKE '*'"
 $ipaddress_filter.Add_TextChanged({
-$text = $ipaddress_filter.Text
-$Global:ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
-if ($procfilter.Contains('LIKE') -or $statefilter.Contains('LIKE')) {
+    $text = $ipaddress_filter.Text
+    $Global:ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
     $ipfilter = $ipfilter + " AND "+$procfilter+ " AND "+$statefilter
-    Write-Host $ipfilter
-}
-$nc_table.DefaultView.RowFilter = $ipfilter
+    $nc_table.DefaultView.RowFilter = $ipfilter
 })
 $NC.Controls.Add($ipaddress_filter)
 
@@ -136,12 +131,10 @@ $state_filter.Text = "State"
 $state_filter.Location = New-Object System.Drawing.Point (300, 640)
 $Global:statefilter = "State LIKE '*'"
 $state_filter.Add_TextChanged({
-$text = $state_filter.Text
-$Global:statefilter = "State LIKE '$text'"
-if ($procfilter.Contains('LIKE') -or $ipfilter.Contains('LIKE')) {
+    $text = $state_filter.Text
+    $Global:statefilter = "State LIKE '$text'"
     $statefilter = $statefilter + " AND "+$procfilter+ " AND "+$ipfilter
-}
-$nc_table.DefaultView.RowFilter = $statefilter
+    $nc_table.DefaultView.RowFilter = $statefilter
 })
 $NC.Controls.Add($state_filter)
 
@@ -179,17 +172,19 @@ $rat_checkbox.add_CheckedChanged({
             $i++
         }
         $process_name_filter.Text = $rat_filter
+        $procfilter = $rat_filter
         $nc_table.DefaultView.RowFilter = $rat_filter
     }
     else {
         $process_name_filter.Text = "*"
+        $procfilter = "*"
     }
 })
 
 # Checkbox for System Process Names
 $system_procs_checkbox = New-Object System.Windows.Forms.CheckBox
 $system_procs_checkbox.Text = "System Processes"
-$system_procs_checkbox.Width = 200
+$system_procs_checkbox.Width = 120
 $system_procs_checkbox.Height = 20
 $system_procs_checkbox.Location = New-Object System.Drawing.Point (10, 680)
 $NC.Controls.Add($system_procs_checkbox)
@@ -206,10 +201,67 @@ $system_procs_checkbox.add_CheckedChanged({
             $i++
         }
         $process_name_filter.Text = $system_filter
+        $procfilter = $system_filter
         $nc_table.DefaultView.RowFilter = $system_filter
     }
     else {
         $process_name_filter.Text = "*"
+        $procfilter = "*"
+    }
+})
+
+# Remove Internal/Private/etc Addresses to only look at External
+$private_ip_list = @(
+    "10.*",
+    "172.16.*",
+    "172.17.*",
+    "172.18.*",
+    "172.19.*",
+    "172.20.*",
+    "172.21.*",
+    "172.22.*",
+    "172.23.*",
+    "172.24.*",
+    "172.25.*",
+    "172.26.*",
+    "172.27.*",
+    "172.28.*",
+    "172.29.*",
+    "172.30.*",
+    "172.31.*",
+    "192.168.*",
+    "::",
+    "::1",
+    "0:0:0:0:0:0:0:1",
+    "127.0.0.1",
+    "0.0.0.0",
+    "fc00:*",
+    "fec0:*"
+)
+$private_address_checkbox = New-Object System.Windows.Forms.CheckBox
+$private_address_checkbox.Text = "Remove Internal IPs"
+$private_address_checkbox.Width = 200
+$private_address_checkbox.Height = 20
+$private_address_checkbox.Location = New-Object System.Drawing.Point (140, 680)
+$NC.Controls.Add($private_address_checkbox)
+$Global:private_address_filter = "RemoteAddress LIKE '%'"
+$private_address_checkbox.add_CheckedChanged({
+    if ($private_address_checkbox.Checked){
+        $private_address_filter = ""
+        $private_address_count = $private_ip_list.Count
+        $i = 1
+        ForEach ($str in $private_ip_list){
+            $private_address_filter += "NOT RemoteAddress LIKE '$str'"
+            if ($i -ne $private_address_count) {
+                $private_address_filter += " AND "
+            }
+            $i++
+        }
+        $private_address_filter = "("+$private_address_filter+") AND ("+$statefilter + ") AND ("+$procfilter+ ") AND ("+$ipfilter+")"
+        $nc_table.DefaultView.RowFilter = $private_address_filter
+    }
+    else {
+        $nc_table.DefaultView.RowFilter = "("+$statefilter + ") AND ("+$procfilter+ ") AND ("+$ipfilter+")"
     }
 })
 
@@ -220,7 +272,6 @@ $filter_label.Height = 20
 $filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress or RemoteAddress), State or enter Custom Filters such as `"PSComputerName LIKE 'COMPUTER*'`", %/* are wildcards"
 $filter_label.Location = New-Object System.Drawing.Point (10,620)
 $NC.Controls.Add($filter_label)
-
 
 
 #DataGrid GUI Element
