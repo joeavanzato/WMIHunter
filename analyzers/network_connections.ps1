@@ -40,19 +40,19 @@ $nc_table = New-Object System.Data.DataTable
 $nc_data = Import-CSV -Path "$evidence_dir\network_connections.csv"
 $nc_headers = $nc_data | Get-Member -MemberType NoteProperty
 ForEach ($header in $nc_headers) {
-    $nc_table.Columns.Add($header.Name)
+    $nc_table.Columns.Add($header.Name) | Out-Null
 }
 
 if ($evidence_array.Contains('running_processes.csv')) {
-    $nc_table.Columns.Add("ProcessName")
-    $nc_table.Columns.Add("CommandLine")
-    $nc_table.Columns.Add("ExecutablePath")
+    $nc_table.Columns.Add("ProcessName")  | Out-Null
+    $nc_table.Columns.Add("CommandLine")  | Out-Null
+    $nc_table.Columns.Add("ExecutablePath")  | Out-Null
 }
 
 # Translate TCP State to English
 # docs.microsoft.com/en-us/dotnet/api/system.net.networkinformation.tcpstate?view=net-6.0
 # Anyone know what '100' is?
-$nc_table.Columns.Add("StateTranslated")
+$nc_table.Columns.Add("StateTranslated")  | Out-Null
 $state_translater = @{
 "1" = "Closed";
 "2" = "Listen";
@@ -119,6 +119,19 @@ $nc_table.DefaultView.RowFilter = $filter
 })
 $NC.Controls.Add($ipaddress_filter)
 
+# State Filter
+$ipaddress_filter = New-Object System.Windows.Forms.TextBox
+$ipaddress_filter.Width = 140
+$ipaddress_filter.Height = 20
+$ipaddress_filter.Text = "IP Address Filter"
+$ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
+$ipaddress_filter.Add_TextChanged({
+$text = $ipaddress_filter.Text
+$filter = "LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text'"
+$nc_table.DefaultView.RowFilter = $filter
+})
+$NC.Controls.Add($ipaddress_filter)
+
 # Checkbox for Remote Administration Tools Process Name Filter
 . ".\helpers\suspicious_process_keywords.ps1"
 $rat_checkbox = New-Object System.Windows.Forms.CheckBox
@@ -141,7 +154,6 @@ $rat_checkbox.add_CheckedChanged({
         }
         $process_name_filter.Text = $rat_filter
         $nc_table.DefaultView.RowFilter = $rat_filter
-        #Write-Host $rat_filter
     }
     else {
         $process_name_filter.Text = "*"
@@ -169,7 +181,6 @@ $system_procs_checkbox.add_CheckedChanged({
         }
         $process_name_filter.Text = $system_filter
         $nc_table.DefaultView.RowFilter = $system_filter
-        #Write-Host $system_filter
     }
     else {
         $process_name_filter.Text = "*"
@@ -207,6 +218,6 @@ $grid.Add_VisibleChanged({AutoResizeColumns $grid})
 $NC.Controls.Add($grid)
 
 . ".\helpers\console_manipulation.ps1"
-#Hide-Console
+Hide-Console
 
 [void]$NC.ShowDialog()
