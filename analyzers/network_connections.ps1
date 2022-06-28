@@ -1,3 +1,6 @@
+# TODO - Break into Functions/Refactor
+
+
 param(
      [Parameter()]
      [array]$evidence_array,
@@ -89,18 +92,30 @@ ForEach ($row in $nc_data) {
     $nc_table.Rows.Add($new_row)
 }
 
-
+# Process Name Filter
 $process_name_filter = New-Object System.Windows.Forms.TextBox
 $process_name_filter.Width = 140
 $process_name_filter.Height = 20
 $process_name_filter.Text = "Process Name Filter"
 $process_name_filter.Location = New-Object System.Drawing.Point (10, 640)
+$process_name_filter.Add_TextChanged({
+$text = $process_name_filter.Text
+$filter = "ProcessName LIKE '$text' OR CommandLine LIKE '$text'"
+$nc_table.DefaultView.RowFilter = $filter
+})
 $NC.Controls.Add($process_name_filter)
+
+# IP Address Filter
 $ipaddress_filter = New-Object System.Windows.Forms.TextBox
 $ipaddress_filter.Width = 140
 $ipaddress_filter.Height = 20
 $ipaddress_filter.Text = "IP Address Filter"
 $ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
+$ipaddress_filter.Add_TextChanged({
+$text = $ipaddress_filter.Text
+$filter = "LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text'"
+$nc_table.DefaultView.RowFilter = $filter
+})
 $NC.Controls.Add($ipaddress_filter)
 
 # Checkbox for Remote Administration Tools Process Name Filter
@@ -132,6 +147,7 @@ $rat_checkbox.add_CheckedChanged({
     }
 })
 
+# Label for Filter Controls
 $filter_label = New-Object System.Windows.Forms.Label
 $filter_label.Width = 600
 $filter_label.Height = 20
@@ -154,17 +170,9 @@ $grid.ColumnHeadersVisible = $true
 $grid.AutoSize = $true
 $grid.AllowSorting = $true
 $grid.ReadOnly = $true
-
-$process_name_filter.Add_TextChanged({
-$text = $process_name_filter.Text
-$filter = "ProcessName LIKE '$text' OR CommandLine LIKE '$text'"
-$nc_table.DefaultView.RowFilter = $filter
-})
-$ipaddress_filter.Add_TextChanged({
-$text = $ipaddress_filter.Text
-$filter = "LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text'"
-$nc_table.DefaultView.RowFilter = $filter
-})
-
 $NC.Controls.Add($grid)
+
+. ".\helpers\console_manipulation.ps1"
+Hide-Console
+
 [void]$NC.ShowDialog()
