@@ -39,12 +39,12 @@ Therefore, I needed a solution that was typically enabled on as many endpoints a
 -process_names = Array of Process Names to Filter on #TODO
 -service_names = Array of Service Names to Filter on #TODO
 
-.\wmih.ps1 -gui - Launch with optional GUI - will eventually ignore all command-line parameters
-.\wmih.ps1 - Will execute with default parameters (16 threads, all data collection enabled, ADSI Searcher to find Computer Users, No IOC filtering)
-.\wmih.ps1 -max_threads 20 - Launch with default parameters but increase or decrease the max threads used in the Runspace CreateRunspacePool
-.\wmih.ps1 -data_types processes,connections - Only retrieve running processes and network connections
-.\wmih.ps1 -computers_file 'C:\file.txt' - Supply a line-delimited list of hostnames for use in querying rather than using an ADSI searcher
-.\wmih.ps1 -ips 10.10.10.10,192.168.0.1 - Supply an array of IP Addresses that will be used to filter for specific Remote Connections
+.\wmihunter.ps1 -gui - Launch with optional GUI - will eventually ignore all command-line parameters
+.\wmihunter.ps1 - Will execute with default parameters (16 threads, all data collection enabled, ADSI Searcher to find Computer Users, No IOC filtering)
+.\wmihunter.ps1 -max_threads 20 - Launch with default parameters but increase or decrease the max threads used in the Runspace CreateRunspacePool
+.\wmihunter.ps1 -data_types processes,connections - Only retrieve running processes and network connections
+.\wmihunter.ps1 -computers_file 'C:\file.txt' - Supply a line-delimited list of hostnames for use in querying rather than using an ADSI searcher
+.\wmihunter.ps1 -ips 10.10.10.10,192.168.0.1 - Supply an array of IP Addresses that will be used to filter for specific Remote Connections
 ```
 ### AVAILABLE DATA TYPES
 * processes - Retrieves information about running processes.
@@ -59,6 +59,15 @@ Therefore, I needed a solution that was typically enabled on as many endpoints a
 * network_shares - Retrieves information about shared resources.
 * startups - Retrieves information about commands run automatically at user logon.
 * sys_accounts - Retrieves information about system accounts.
+
+### Analyzer
+In the process of making this, I realized that I tend to take the same steps with the data in most situations - joining certain pieces together, looking for certain indicators or patterns, etc - so of course I will automate this in the form of WMIHAnalyzer.ps1, which is a GUI front-end designed to launch evidence-analysis and exploration scripts based on detected evidence.
+
+You can launch the analyzer from the main WMIHunter.ps1 GUI or just by launching the script from within the evidence directory.  It also takes a parameter, -evidence_dir '' if you wish to launch it against a remote evidence directory.
+
+#### Currently Working
+* network_connections.csv (Also joins CommandLine, ProcessName, ExecutablePath from running_processes.csv if both are detected)
+
 
 ## TODO
 * WMI Connection Test on Host and Skip All Queries if Unresponsive
