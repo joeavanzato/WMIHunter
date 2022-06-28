@@ -72,15 +72,15 @@ function BuildGUI {
     Add-Type -AssemblyName System.Windows.Forms
     $bold_font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
     $G = New-Object System.Windows.Forms.Form
-    $G.ClientSize = '300,400'
-    $G.text = 'WMIH Data Explorer'
+    $G.ClientSize = '225,300'
+    $G.text = 'WMIH Analyzer'
     $G.BackColor = "#ffffff"
 
     $data_title = New-Object System.Windows.Forms.Label
     $data_title.text = "Evidence Found"
     $data_title.width = 120
     $data_title.height = 20
-    $data_title.Location = New-Object System.Drawing.Point(20, 20)
+    $data_title.Location = New-Object System.Drawing.Point(50, 20)
     $data_title.Font = $bold_font
     $G.controls.Add($data_title)
 
