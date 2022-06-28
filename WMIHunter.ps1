@@ -1,5 +1,5 @@
 ### Windows Management Instrumentation Hunter
-# github.com/joeavanzato/wmih
+# github.com/joeavanzato/wmihunter
 # Utilize WMI via PowerShell to retrieve and filter information from remote hosts for IR/Hunting purposes.
 # Requires execution as user account that has permissions to query WMI remotely - by default this is only Local Admins but other domain users can be added
 
@@ -24,8 +24,6 @@
 # network_shares - Retrieves information about shared resources.
 # startups - Retrieves information about commands run automatically at user logon.
 # sys_accounts - Retrieves information about system accounts.
-
-
 
 
 param(
@@ -401,6 +399,17 @@ function Main {
             $null = $ComputerFileSelector.ShowDialog()
             $Global:File = $ComputerFileSelector.FileName
             $comp_search.Checked = $false
+        })
+
+        $analyze_button = New-Object System.Windows.Forms.Button
+        $analyze_button.text = "Analyze Results"
+        $analyze_button.width = 150
+        $analyze_button.height = 20
+        $analyze_button.Location = New-Object System.Drawing.Point(250,310)
+        $analyze_button.Font = "Microsoft Sans Serif, 10"
+        $GUI.Controls.Add($analyze_button)
+        $analyze_button.Add_Click({
+            .\WMIHAnalyzer.ps1
         })
 
         $start_button.Add_Click({
