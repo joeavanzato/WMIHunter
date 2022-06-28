@@ -22,3 +22,23 @@ $suspicious_process_keywords_rat = @(
     "desktopnow",
     "showmypc"
 )
+
+$windows_process_names = @(
+    'microsoft.workflow.compiler',
+    'bginfo.exe',
+    'cdb.exe',
+    'cmstp.exe',
+    'csi.exe',
+    'dnx.exe',
+    'fsi.exe',
+    'ieexec.exe',
+    'iexpress.exe',
+    'odbcconf.exe',
+    'rcsi.exe',
+    'xwizard.exe',
+    'lsass.exe',
+    'svchost.exe',
+    'smss.exe',
+    'wininit.exe',
+    'taskhost.exe'
+)
