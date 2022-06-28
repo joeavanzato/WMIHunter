@@ -55,16 +55,21 @@ function LoadToArray ([string]$name) {
     return [System.Collections.ArrayList]$array
 }
 
-function network_connections.csv {
-    #FIX THIS
+function running_processes.csv {
     $current_dir = Get-Location
     $temp_array = ""
     foreach ($item in $evidence_array){
         $temp_array += $item+","
     }
-    Write-Host $current_dir
-    Write-Host $temp_array
-    Write-Host $evidence_dir
+    start-process -FilePath 'powershell.exe' -ArgumentList `"$current_dir\analyzers\running_processes.ps1`",'-evidence_array',$temp_array,'-evidence_dir',`"$evidence_dir`"
+}
+
+function network_connections.csv {
+    $current_dir = Get-Location
+    $temp_array = ""
+    foreach ($item in $evidence_array){
+        $temp_array += $item+","
+    }
     start-process -FilePath 'powershell.exe' -ArgumentList `"$current_dir\analyzers\network_connections.ps1`",'-evidence_array',$temp_array,'-evidence_dir',`"$evidence_dir`"
 }
 
