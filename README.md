@@ -29,7 +29,17 @@ As such, I had a need to rapidly search an environment through readily-available
 Therefore, I needed a solution that was typically enabled on as many endpoints as possible - enter WMI via DCOM.  You may yell at me 'Get-WmiObject is deprecated, use Get-CimInstance!' and you are probably correct, but by default Get-CimInstance uses WinRM/WSMAN and I found simply using Get-WmiObject to be a more elegant solution for the time being rather than forcing Get-CimInstance over DCOM.  It is likely I will transition this in the future.
 
 
+
+###Instructions for Usage
 ```
+1. Clone/Download the Repository [git clone https://github.com/joeavanzato/WMIHunter]
+2. cd WMIHunter && powershell.exe .\wmihunter.ps1 -gui
+3. Select Data Types to Retrieve - some can take longer than others.
+4. If using a pre-specified list of Computers, select the file using 'Computer List', otherwise no action needed.
+5. Specify Max Threads depending on CPU - an 8-core CPU typically has 16 threads available for use - 2 per core.  Adjust accordingly.
+6. Click Start - once results are retrieved, it is possible to hit 'Analyze' to launch the sub-script for analyzing data which will present a GUI based on collected evidence
+7. Select buttons from Analyzer menu to open up data analysis/exploration windows for that particular piece of evidence.
+
 # ARGUMENTS
 -gui = Launch with GUI
 -max_threads = Maximum threads to utilize for asynchronous operations (Optional)
