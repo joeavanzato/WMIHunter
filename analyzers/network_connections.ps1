@@ -9,8 +9,7 @@ param(
  )
 
 function LoadToArray ([string]$name) {
-    #Loading Data
-    Write-Host $name
+    #Load File from Evidence Dir into ArrayList
     $data_path = "$evidence_dir\$name"
     $array = New-Object System.Collections.ArrayList
     $data = @(Import-CSV -Path "$data_path")
@@ -22,7 +21,7 @@ Add-Type -AssemblyName System.Windows.Forms
 $bold_font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
 $NC = New-Object System.Windows.Forms.Form
 $NC.ClientSize = '1200,800'
-$NC.text = 'WMIH - Network Connection Explorer'
+$NC.text = 'WMIH - Network Connection Analyzer'
 $NC.BackColor = "#ffffff"
 [hashtable]$process_table = @{}
 if ($evidence_array.Contains('running_processes.csv')) {
@@ -155,6 +154,8 @@ $filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress o
 $filter_label.Location = New-Object System.Drawing.Point (10,620)
 $NC.Controls.Add($filter_label)
 
+
+
 #DataGrid GUI Element
 $grid = New-Object System.Windows.Forms.DataGrid
 $grid.Width = 1200
@@ -170,9 +171,12 @@ $grid.ColumnHeadersVisible = $true
 $grid.AutoSize = $true
 $grid.AllowSorting = $true
 $grid.ReadOnly = $true
+. ".\helpers\dataresize.ps1"
+$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
+$grid.Add_VisibleChanged({AutoResizeColumns $grid})
 $NC.Controls.Add($grid)
 
 . ".\helpers\console_manipulation.ps1"
-Hide-Console
+#Hide-Console
 
 [void]$NC.ShowDialog()
