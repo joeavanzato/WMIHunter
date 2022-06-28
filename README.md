@@ -30,7 +30,8 @@ Therefore, I needed a solution that was typically enabled on as many endpoints a
 
 
 
-###Instructions for Usage
+### Instructions for Usage
+
 ```
 1. Clone/Download the Repository [git clone https://github.com/joeavanzato/WMIHunter]
 2. cd WMIHunter && powershell.exe .\wmihunter.ps1 -gui
@@ -77,6 +78,14 @@ You can launch the analyzer from the main WMIHunter.ps1 GUI or just by launching
 
 #### Currently Working
 * network_connections.csv (Also joins CommandLine, ProcessName, ExecutablePath from running_processes.csv if both are detected)
+
+Analyzer Main Screen
+
+![Analyzer 1](screens/analyzer_1.png)
+
+Network Connection Analysis joined on Running Processes Output
+
+![Analyzer 2](screens/analyzer_2.png)
 
 
 ## TODO
