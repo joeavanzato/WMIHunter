@@ -99,10 +99,14 @@ $process_name_filter.Width = 140
 $process_name_filter.Height = 20
 $process_name_filter.Text = "Process Name Filter"
 $process_name_filter.Location = New-Object System.Drawing.Point (10, 640)
+$Global:procfilter = "ProcessName LIKE '*''"
 $process_name_filter.Add_TextChanged({
 $text = $process_name_filter.Text
-$filter = "ProcessName LIKE '$text' OR CommandLine LIKE '$text'"
-$nc_table.DefaultView.RowFilter = $filter
+$Global:procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
+if ($ipfilter.Contains('LIKE') -or $statefilter.Contains('LIKE')) {
+    $procfilter = $procfilter + " AND "+$ipfilter+ " AND "+$statefilter
+}
+$nc_table.DefaultView.RowFilter = $procfilter
 })
 $NC.Controls.Add($process_name_filter)
 
@@ -112,25 +116,47 @@ $ipaddress_filter.Width = 140
 $ipaddress_filter.Height = 20
 $ipaddress_filter.Text = "IP Address Filter"
 $ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
+$Global:ipfilter = "LocalAddress LIKE '*'"
 $ipaddress_filter.Add_TextChanged({
 $text = $ipaddress_filter.Text
-$filter = "LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text'"
-$nc_table.DefaultView.RowFilter = $filter
+$Global:ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
+if ($procfilter.Contains('LIKE') -or $statefilter.Contains('LIKE')) {
+    $ipfilter = $ipfilter + " AND "+$procfilter+ " AND "+$statefilter
+    Write-Host $ipfilter
+}
+$nc_table.DefaultView.RowFilter = $ipfilter
 })
 $NC.Controls.Add($ipaddress_filter)
 
 # State Filter
-$ipaddress_filter = New-Object System.Windows.Forms.TextBox
-$ipaddress_filter.Width = 140
-$ipaddress_filter.Height = 20
-$ipaddress_filter.Text = "IP Address Filter"
-$ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
-$ipaddress_filter.Add_TextChanged({
-$text = $ipaddress_filter.Text
-$filter = "LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text'"
-$nc_table.DefaultView.RowFilter = $filter
+$state_filter = New-Object System.Windows.Forms.TextBox
+$state_filter.Width = 40
+$state_filter.Height = 20
+$state_filter.Text = "State"
+$state_filter.Location = New-Object System.Drawing.Point (300, 640)
+$Global:statefilter = "State LIKE '*'"
+$state_filter.Add_TextChanged({
+$text = $state_filter.Text
+$Global:statefilter = "State LIKE '$text'"
+if ($procfilter.Contains('LIKE') -or $ipfilter.Contains('LIKE')) {
+    $statefilter = $statefilter + " AND "+$procfilter+ " AND "+$ipfilter
+}
+$nc_table.DefaultView.RowFilter = $statefilter
 })
-$NC.Controls.Add($ipaddress_filter)
+$NC.Controls.Add($state_filter)
+
+# Custom Filter
+$custom_filter = New-Object System.Windows.Forms.TextBox
+$custom_filter.Width = 140
+$custom_filter.Height = 20
+$custom_filter.Text = "Custom Filter"
+$custom_filter.Location = New-Object System.Drawing.Point (350, 640)
+$Global:customfilter = ""
+$custom_filter.Add_TextChanged({
+$customfilter = $custom_filter.Text
+$nc_table.DefaultView.RowFilter = $customfilter
+})
+$NC.Controls.Add($custom_filter)
 
 # Checkbox for Remote Administration Tools Process Name Filter
 . ".\helpers\suspicious_process_keywords.ps1"
@@ -189,9 +215,9 @@ $system_procs_checkbox.add_CheckedChanged({
 
 # Label for Filter Controls
 $filter_label = New-Object System.Windows.Forms.Label
-$filter_label.Width = 600
+$filter_label.Width = 1000
 $filter_label.Height = 20
-$filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress or RemoteAddress), % or * is wildcard"
+$filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress or RemoteAddress), State or enter Custom Filters such as `"PSComputerName LIKE 'COMPUTER*'`", %/* are wildcards"
 $filter_label.Location = New-Object System.Drawing.Point (10,620)
 $NC.Controls.Add($filter_label)
 
@@ -218,6 +244,6 @@ $grid.Add_VisibleChanged({AutoResizeColumns $grid})
 $NC.Controls.Add($grid)
 
 . ".\helpers\console_manipulation.ps1"
-Hide-Console
+#Hide-Console
 
 [void]$NC.ShowDialog()
