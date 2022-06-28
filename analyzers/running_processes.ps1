@@ -28,11 +28,19 @@ $NC.BackColor = "#ffffff"
 # Build table if we fine network_connections.csv in evidence array
 [hashtable]$conn_table = @{}
 if ($evidence_array.Contains('network_connections.csv')) {
-    Write-Host "Found network_connections.csv, Joining Network Connections on PID"
+    Write-Host "Found network_connections.csv, Joining Network Connections on PID (This can take a few minutes)"
+    $l = 0
+    $o = 0
     Import-CSV "$evidence_dir\network_connections.csv" | ForEach-Object {
+        $l++
         $temp_table = @($_.LocalPort, $_.RemotePort, $_.RemoteAddress, $_.State)
         $temp_key = $_.PSComputerName+"_"+$_.OwningProcess
         $conn_table.$temp_key = $temp_table
+        if ($l -eq 1000){
+            $l = 0
+            $o += 1000
+            Write-Host "Reading Network Connection Data - Done: "$o
+        }
     }
     #[System.Collections.ArrayList]$connarray = LoadToArray('network_connections.csv')
     #ForEach ($conn in $connarray) {
@@ -44,17 +52,18 @@ if ($evidence_array.Contains('network_connections.csv')) {
 
 # Build the Data Table
 $nc_table = New-Object System.Data.DataTable
-$nc_data = Import-CSV -Path "$evidence_dir\running_processes.csv"
-$nc_headers = $nc_data | Get-Member -MemberType NoteProperty
+$StartTime = Get-Date
+#Write-Host "Started Reading CSV: "$StartTime
+#$nc_data = Import-CSV -Path "$evidence_dir\running_processes.csv"
+#$FinishTime = Get-Date
+#Write-Host "Finished Reading CSV: "$FinishTime
+#Write-Host "Time Taken: "$FinishTime - $StartTime
+#$nc_headers = $nc_data | Get-Member -MemberType NoteProperty
+$nc_headers = @("ProcessId","ParentProcessId","ProcessName","ExecutablePath","CommandLine","PSComputerName")
 $l = 0
 ForEach ($header in $nc_headers) {
-    $nc_table.Columns.Add($header.Name) | Out-Null
-    #if ($header -eq 'CommandLine'){
-    #    $nc.table.Columns[$l].Width = 100
-    #}
-    #$l++
+    $nc_table.Columns.Add($header) | Out-Null
 }
-
 if ($evidence_array.Contains('network_connections.csv')) {
     $nc_table.Columns.Add("LocalPort")  | Out-Null
     $nc_table.Columns.Add("RemotePort")  | Out-Null
@@ -77,10 +86,12 @@ $state_translater = @{
 "11" = "TimeWait";
 "12" = "DeleteTCB"
 }
-
-ForEach ($row in $nc_data) {
-#PSComputerName	ProcessId	ParentProcessId	ProcessName	ExecutablePath	CommandLine
+$l = 0
+$o = 0
+Write-Host "Starting DataTable Population.."
+Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
     $new_row = $nc_table.NewRow()
+    $row = $_
     $new_row.PSComputerName = $row.PSComputerName
     $new_row.ProcessId = $row.ProcessId
     $new_row.ParentProcessId = $row.ParentProcessId
@@ -101,6 +112,12 @@ ForEach ($row in $nc_data) {
         $new_row.State = "N/A"
         $new_row.StateTranslated = "N/A"
     }
+    if ($l -eq 100){
+        $l = 0
+        $o += 100
+        Write-Host "Rows Added: "$o
+    }
+    $l++
     $nc_table.Rows.Add($new_row)
 }
 
@@ -299,10 +316,10 @@ $grid.DataBindings.DefaultDataSourceUpdateMode = 0
 $grid.Name="TCP Connections"
 $grid.TabIndex = 0
 $grid.Location = New-Object System.Drawing.Point (10,20)
-$grid.DataMember=""
+#$grid.DataMember=""
 $grid.DataSource=$nc_table
 $grid.ColumnHeadersVisible = $true
-$grid.AutoSize = $true
+#$grid.AutoSize = $true
 #$grid.AutoSizeColumnsMode = 'AllCells'
 #$grid.AllowSorting = $true
 $grid.ReadOnly = $true
@@ -310,7 +327,6 @@ $grid.Size = '1500, 600'
 #$grid.AutoSizeColumnsMode='Fill'
 #$grid.AutoSizeRowsMode = 'AllCells'
 $grid.Anchor = 'Left, Right, Top, Bottom'
-$grid.Columns[0].Width = 120
 
 . ".\helpers\dataresize.ps1"
 #$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
@@ -318,9 +334,9 @@ $grid.Columns[0].Width = 120
 $NC.Controls.Add($grid)
 
 . ".\helpers\doublebuffer_grid.ps1"
+Enable-DataGridViewDoubleBuffer $grid
 
 . ".\helpers\console_manipulation.ps1"
-Enable-DataGridViewDoubleBuffer $grid
 #Hide-Console
 
 [void]$NC.ShowDialog()
