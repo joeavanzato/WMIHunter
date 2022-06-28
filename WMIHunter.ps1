@@ -4,6 +4,7 @@
 # Requires execution as user account that has permissions to query WMI remotely - by default this is only Local Admins but other domain users can be added
 
 ### USAGE
+# .\wmihunter.ps1 -gui - Launch with GUI
 # .\wmih.ps1 - Will execute with default parameters (16 threads, all data collection enabled, ADSI Searcher to find Computer Users, No IOC filtering)
 # .\wmih.ps1 -max_threads 20 - Launch with default parameters but increase or decrease the max threads used in the Runspace CreateRunspacePool
 # .\wmih.ps1 -data_types processes,connections - Only retrieve  running processes and network connections
@@ -190,6 +191,7 @@ function LoopAndStartJobs ([array] $Computers, [string] $script){
 function Main {
         if ($gui) {
         $Global:using_gui = $true
+        # TODO - Refactor GUI into separate function for cleanliness
         ### GUI SETUP ###
         Add-Type -AssemblyName System.Windows.Forms
         $bold_font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
@@ -403,7 +405,7 @@ function Main {
             $Global:File = $ComputerFileSelector.FileName
             $comp_search.Checked = $false
         })
-
+        #TODO - Check if analyzer script exists before calling, warn otherwise with popup
         $analyze_button = New-Object System.Windows.Forms.Button
         $analyze_button.text = "Analyze Results"
         $analyze_button.width = 115

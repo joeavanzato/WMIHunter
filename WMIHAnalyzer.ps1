@@ -56,7 +56,16 @@ function LoadToArray ([string]$name) {
 }
 
 function network_connections.csv {
-    .\analyzers\network_connections.ps1 -evidence_array $evidence_array -evidence_dir $evidence_dir
+    #FIX THIS
+    $current_dir = Get-Location
+    $temp_array = ""
+    foreach ($item in $evidence_array){
+        $temp_array += $item+","
+    }
+    Write-Host $current_dir
+    Write-Host $temp_array
+    Write-Host $evidence_dir
+    start-process -FilePath 'powershell.exe' -ArgumentList `"$current_dir\analyzers\network_connections.ps1`",'-evidence_array',$temp_array,'-evidence_dir',`"$evidence_dir`"
 }
 
 function BuildGUI {
