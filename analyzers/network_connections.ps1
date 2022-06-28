@@ -20,7 +20,7 @@ function LoadToArray ([string]$name) {
 Add-Type -AssemblyName System.Windows.Forms
 $bold_font = New-Object System.Drawing.Font("Microsoft Sans Serif", 10, [System.Drawing.FontStyle]::Bold)
 $NC = New-Object System.Windows.Forms.Form
-$NC.ClientSize = '1200,800'
+$NC.ClientSize = '1600,800'
 $NC.text = 'WMIH - Network Connection Analyzer'
 $NC.BackColor = "#ffffff"
 [hashtable]$process_table = @{}
@@ -35,6 +35,7 @@ if ($evidence_array.Contains('running_processes.csv')) {
     }
 }
 
+# Build the Data Table
 $nc_table = New-Object System.Data.DataTable
 $nc_data = Import-CSV -Path "$evidence_dir\network_connections.csv"
 $nc_headers = $nc_data | Get-Member -MemberType NoteProperty
@@ -47,6 +48,7 @@ if ($evidence_array.Contains('running_processes.csv')) {
     $nc_table.Columns.Add("CommandLine")
     $nc_table.Columns.Add("ExecutablePath")
 }
+
 # Translate TCP State to English
 # docs.microsoft.com/en-us/dotnet/api/system.net.networkinformation.tcpstate?view=net-6.0
 # Anyone know what '100' is?
@@ -139,7 +141,35 @@ $rat_checkbox.add_CheckedChanged({
         }
         $process_name_filter.Text = $rat_filter
         $nc_table.DefaultView.RowFilter = $rat_filter
-        Write-Host $rat_filter
+        #Write-Host $rat_filter
+    }
+    else {
+        $process_name_filter.Text = "*"
+    }
+})
+
+# Checkbox for System Process Names
+$system_procs_checkbox = New-Object System.Windows.Forms.CheckBox
+$system_procs_checkbox.Text = "System Processes"
+$system_procs_checkbox.Width = 200
+$system_procs_checkbox.Height = 20
+$system_procs_checkbox.Location = New-Object System.Drawing.Point (10, 680)
+$NC.Controls.Add($system_procs_checkbox)
+$system_procs_checkbox.add_CheckedChanged({
+    if ($system_procs_checkbox.Checked){
+        $system_filter = ""
+        $system_count = $windows_process_names.Count
+        $i = 1
+        ForEach ($str in $windows_process_names){
+            $system_filter += "ProcessName LIKE '%$str%' OR CommandLine LIKE '%$str%'"
+            if ($i -ne $system_count) {
+                $system_filter += " OR "
+            }
+            $i++
+        }
+        $process_name_filter.Text = $system_filter
+        $nc_table.DefaultView.RowFilter = $system_filter
+        #Write-Host $system_filter
     }
     else {
         $process_name_filter.Text = "*"
@@ -158,7 +188,7 @@ $NC.Controls.Add($filter_label)
 
 #DataGrid GUI Element
 $grid = New-Object System.Windows.Forms.DataGrid
-$grid.Width = 1200
+$grid.Width = 1500
 $grid.Height = 600
 $grid.DataBindings.DefaultDataSourceUpdateMode = 0
 $grid.HeaderForeColor = [System.Drawing.Color]::FromArgb(255,0,0,0)
