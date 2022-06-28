@@ -81,11 +81,11 @@ You can launch the analyzer from the main WMIHunter.ps1 GUI or just by launching
 
 Analyzer Main Screen
 
-![Analyzer 1](screens/analyzer_1.PNG)
+![Analyzer 1](screens/analyzer_1.png)
 
 Network Connection Analysis joined on Running Processes Output
 
-![Analyzer 2](screens/analyzer_2.PNG)
+![Analyzer 2](screens/analyzer_2.png)
 
 
 ## TODO
