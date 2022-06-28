@@ -93,11 +93,16 @@ ForEach ($row in $nc_data) {
     $nc_table.Rows.Add($new_row)
 }
 
+function ModFilter (){
+    $filter_string = ""
+    $i = 0
+    $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
+    $nc_table.DefaultView.RowFilter = $filter_string
+}
+
 
 $filter_list = [System.Collections.ArrayList]@()
 $Global:filter_table = @{}
-
-
 
 # Process Name Filter
 $process_name_filter = New-Object System.Windows.Forms.TextBox
@@ -109,10 +114,7 @@ $filter_table.procfilter = "ProcessName LIKE '*'"
 $process_name_filter.Add_TextChanged({
     $text = $process_name_filter.Text
     $filter_table.procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
-    $filter_string = ""
-    $i = 0
-    $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-    $nc_table.DefaultView.RowFilter = $filter_string
+    ModFilter
 })
 $NC.Controls.Add($process_name_filter)
 
@@ -125,10 +127,7 @@ $ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
 $ipaddress_filter.Add_TextChanged({
     $text = $ipaddress_filter.Text
     $filter_table.ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
-    $filter_string = ""
-    $i = 0
-    $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-    $nc_table.DefaultView.RowFilter = $filter_string
+    ModFilter
 })
 $NC.Controls.Add($ipaddress_filter)
 
@@ -141,10 +140,7 @@ $state_filter.Location = New-Object System.Drawing.Point (300, 640)
 $state_filter.Add_TextChanged({
     $text = $state_filter.Text
     $filter_table.statefilter = "State LIKE '$text'"
-    $filter_string = ""
-    $i = 0
-    $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-    $nc_table.DefaultView.RowFilter = $filter_string
+    ModFilter
 })
 $NC.Controls.Add($state_filter)
 
@@ -181,17 +177,11 @@ $rat_checkbox.add_CheckedChanged({
             $i++
         }
         $filter_table.rat_filter = $rat_filter
-        $filter_string = ""
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        $nc_table.DefaultView.RowFilter = $filter_string
+        ModFilter
     }
     else {
         $filter_table.$rat_filter = "ProcessName LIKE '%'"
-        $filter_string = ""
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        $nc_table.DefaultView.RowFilter = $filter_string
+        ModFilter
     }
 })
 
@@ -215,18 +205,11 @@ $system_procs_checkbox.add_CheckedChanged({
             $i++
         }
         $filter_table.system_filter = $system_filter
-        $filter_string = ""
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        $nc_table.DefaultView.RowFilter = $filter_string
+        ModFilter
     }
     else {
         $filter_table.system_filter = "ProcessName LIKE '%'"
-        $filter_string = ""
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        Write-Host $filter_string
-        $nc_table.DefaultView.RowFilter = $filter_string
+        ModFilter
     }
 })
 
@@ -276,18 +259,10 @@ $private_address_checkbox.add_CheckedChanged({
             $i++
         }
         $filter_table.private_address_filter = $private_address_filter
-        $filter_string = ""
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        Write-Host $filter_string
-        $nc_table.DefaultView.RowFilter = $filter_string
+        ModFilter
     } else {
-        $private_address_filter = "RemoteAddress LIKE '%'"
-        $filter_table.private_address_filter = $private_address_filter
-        $i = 0
-        $filter_table.GetEnumerator() | ForEach-Object {if($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
-        Write-Host $filter_string
-        $nc_table.DefaultView.RowFilter = $filter_string
+        $filter_table.private_address_filter = "RemoteAddress LIKE '%'"
+        ModFilter
     }
 })
 
