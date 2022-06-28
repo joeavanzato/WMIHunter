@@ -34,7 +34,7 @@ if ($evidence_array.Contains('network_connections.csv')) {
     Import-CSV "$evidence_dir\network_connections.csv" | ForEach-Object {
         $l++
         $temp_table = @($_.LocalPort, $_.RemotePort, $_.RemoteAddress, $_.State)
-        $temp_key = $_.PSComputerName+"_"+$_.OwningProcess
+        $temp_key = $_.PSComputerName+$_.OwningProcess
         $conn_table.$temp_key = $temp_table
         if ($l -eq 1000){
             $l = 0
@@ -52,7 +52,7 @@ if ($evidence_array.Contains('network_connections.csv')) {
 
 # Build the Data Table
 $nc_table = New-Object System.Data.DataTable
-$StartTime = Get-Date
+#$StartTime = Get-Date
 #Write-Host "Started Reading CSV: "$StartTime
 #$nc_data = Import-CSV -Path "$evidence_dir\running_processes.csv"
 #$FinishTime = Get-Date
@@ -89,6 +89,7 @@ $state_translater = @{
 $l = 0
 $o = 0
 Write-Host "Starting DataTable Population.."
+$StartTime = Get-Date
 Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
     $new_row = $nc_table.NewRow()
     $row = $_
@@ -98,7 +99,7 @@ Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
     $new_row.ProcessName = $row.ProcessName
     $new_row.ExecutablePath = $row.ExecutablePath
     $new_row.CommandLine = $row.CommandLine
-    $temp_key2 = $row.PSComputerName+"_"+$row.ProcessId
+    $temp_key2 = $row.PSComputerName+$row.ProcessId
     if ($conn_table.$temp_key2){
         $new_row.LocalPort = $conn_table.$temp_key2[0]
         $new_row.RemotePort = $conn_table.$temp_key2[1]
@@ -120,7 +121,9 @@ Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
     $l++
     $nc_table.Rows.Add($new_row)
 }
-
+$FinishTime = Get-Date
+$x= $FinishTime - $StartTime
+Write-Host "Time Taken: "$x
 function ModFilter (){
     $filter_string = ""
     $i = 0
@@ -189,7 +192,7 @@ $NC.Controls.Add($custom_filter)
 . ".\helpers\suspicious_process_keywords.ps1"
 $rat_checkbox = New-Object System.Windows.Forms.CheckBox
 $rat_checkbox.Text = "Common RATs"
-$rat_checkbox.Width = 200
+$rat_checkbox.Width = 120
 $rat_checkbox.Height = 20
 $rat_checkbox.Location = New-Object System.Drawing.Point (10, 660)
 $NC.Controls.Add($rat_checkbox)
@@ -295,7 +298,48 @@ $private_address_checkbox.add_CheckedChanged({
     }
 })
 
+. ".\helpers\system_binaries_with_locations.ps1"
 
+# TODO - Case insensitive comparisons
+$abnormal_bin_location_checkbox = New-Object System.Windows.Forms.CheckBox
+$abnormal_bin_location_checkbox.Text = "Abnormal Binary Location"
+$abnormal_bin_location_checkbox.Width = 200
+$abnormal_bin_location_checkbox.Height = 20
+$abnormal_bin_location_checkbox.Location = New-Object System.Drawing.Point (140, 660)
+$NC.Controls.Add($abnormal_bin_location_checkbox)
+$Global:abnormal_bin_location_checkbox = "ProcessName LIKE '%'"
+$abnormal_bin_location_checkbox.add_CheckedChanged({
+    if ($abnormal_bin_location_checkbox.Checked){
+        $abnormal_bin_filter = ""
+        $abnormal_bin_count = $system_binaries_with_locations.Count
+        Write-Host $abnormal_bin_count
+        $i = 1
+        $system_binaries_with_locations.GetEnumerator() | ForEach-Object {
+            $temp_key = $_.Key
+            Write-Host $i
+            # All items should be arrays
+            $y = $_.Value.Count
+            $z = 1
+            ForEach ($item in $_.Value){
+                $abnormal_bin_filter += "(ProcessName LIKE '$temp_key' AND NOT ExecutablePath LIKE '$item')"
+                if ($z -ne $y){
+                    $abnormal_bin_filter += " OR "
+                }
+                $z++
+            }
+            if ($i -ne $abnormal_bin_count){
+                    $abnormal_bin_filter += " OR "
+            }
+            $i++
+        }
+        Write-Host $abnormal_bin_filter
+        $filter_table.abnormal_bin_filter = $abnormal_bin_filter
+        ModFilter
+    } else {
+        $filter_table.abnormal_bin_filter = "ProcessName LIKE '%'"
+        ModFilter
+    }
+})
 
 # Label for Filter Controls
 $filter_label = New-Object System.Windows.Forms.Label
