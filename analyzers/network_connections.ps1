@@ -101,7 +101,7 @@ ForEach ($row in $nc_data) {
     $new_row.OwningProcess = $row.OwningProcess
     $new_row.PSComputerName = $row.PSComputerName
     $new_row.State = $row.State
-    $temp_key2 = $row.PSComputerName+"_"+$row.OwningProcess
+    $temp_key2 = $row.PSComputerName+$row.OwningProcess
     if ($process_table.$temp_key2){
            $new_row.ProcessName = $process_table.$temp_key2[0]
            $new_row.ExecutablePath = $process_table.$temp_key2[1]
