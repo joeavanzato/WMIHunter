@@ -25,14 +25,35 @@ $NC.text = 'WMIH - Network Connection Analyzer'
 $NC.BackColor = "#ffffff"
 [hashtable]$process_table = @{}
 if ($evidence_array.Contains('running_processes.csv')) {
-    Write-Host "Found running_processes.csv, Joining Network Connections on PID"
-    $temp_path = "$evidence_dir\running_processes.csv"
-    [System.Collections.ArrayList]$procarray = LoadToArray('running_processes.csv')
-    ForEach ($process in $procarray) {
-        $temp_table = @($process.ProcessName, $process.CommandLine, $process.ExecutablePath)
-        $temp_key = $process.PSComputerName+"_"+$process.ProcessId
-        $process_table.$temp_key = $temp_table
+    Write-Host "Found running_processes.csv, Joining Network Connections on PID (This can take a few minutes)"
+    $l = 0
+    $o = 0
+    Import-CSV "$evidence_dir\running_processes.csv" | ForEach-Object {
+        $l++
+        $temp_table = @($_.ProcessName, $_.ExecutablePath, $_.CommandLine)
+        $temp_key = $_.PSComputerName+$_.ProcessId
+        $$process_table.$temp_key = $temp_table
+        if ($l -eq 1000){
+            $l = 0
+            $o += 1000
+            Write-Host "Reading Process Data - Done: "$o
+        }
     }
+    #$temp_path = "$evidence_dir\running_processes.csv"
+    #[System.Collections.ArrayList]$procarray = LoadToArray('running_processes.csv')
+    #$l = 0
+    #$o = 0
+    #ForEach ($process in $procarray) {
+    #    $temp_table = @($process.ProcessName, $process.CommandLine, $process.ExecutablePath)
+    #    $temp_key = $process.PSComputerName+"_"+$process.ProcessId
+    #    $process_table.$temp_key = $temp_table
+    #    if ($l -eq 1000){
+    #    $l = 0
+    #    $o += 1000
+    #    Write-Host "Rows Added: "$o
+    #    }
+    #    $l++
+    #}
 }
 
 # Build the Data Table
@@ -67,7 +88,8 @@ $state_translater = @{
 "11" = "TimeWait";
 "12" = "DeleteTCB"
 }
-
+$l = 0
+$o = 0
 ForEach ($row in $nc_data) {
 #"LocalAddress","RemoteAddress","LocalPort","RemotePort","OwningProcess","PSComputerName","State"
     $new_row = $nc_table.NewRow()
@@ -81,8 +103,8 @@ ForEach ($row in $nc_data) {
     $temp_key2 = $row.PSComputerName+"_"+$row.OwningProcess
     if ($process_table.$temp_key2){
            $new_row.ProcessName = $process_table.$temp_key2[0]
-           $new_row.CommandLine = $process_table.$temp_key2[1]
-           $new_row.ExecutablePath = $process_table.$temp_key2[2]
+           $new_row.ExecutablePath = $process_table.$temp_key2[1]
+           $new_row.CommandLine = $process_table.$temp_key2[2]
     } else {
            $new_row.ProcessName = "N/A"
            $new_row.CommandLine = "N/A"
@@ -90,6 +112,12 @@ ForEach ($row in $nc_data) {
     }
     $state = $row.State
     $new_row.StateTranslated = $state_translater["$state"]
+    if ($l -eq 1000){
+        $l = 0
+        $o += 1000
+        Write-Host "Rows Added: "$o
+    }
+    $l++
     $nc_table.Rows.Add($new_row)
 }
 
@@ -116,6 +144,7 @@ $process_name_filter.Add_TextChanged({
     $filter_table.procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
     ModFilter
 })
+$process_name_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($process_name_filter)
 
 # IP Address Filter
@@ -129,6 +158,7 @@ $ipaddress_filter.Add_TextChanged({
     $filter_table.ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
     ModFilter
 })
+$ipaddress_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($ipaddress_filter)
 
 # State Filter
@@ -142,6 +172,7 @@ $state_filter.Add_TextChanged({
     $filter_table.statefilter = "State LIKE '$text'"
     ModFilter
 })
+$state_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($state_filter)
 
 # Custom Filter
@@ -154,6 +185,7 @@ $custom_filter.Add_TextChanged({
     $filter_table.$customfilter = $custom_filter.Text
     $nc_table.DefaultView.RowFilter = $customfilter
 })
+$custom_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($custom_filter)
 
 # Checkbox for Remote Administration Tools Process Name Filter
@@ -163,6 +195,7 @@ $rat_checkbox.Text = "Common RATs"
 $rat_checkbox.Width = 200
 $rat_checkbox.Height = 20
 $rat_checkbox.Location = New-Object System.Drawing.Point (10, 660)
+$rat_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($rat_checkbox)
 $rat_checkbox.add_CheckedChanged({
     if ($rat_checkbox.Checked){
@@ -191,6 +224,7 @@ $system_procs_checkbox.Text = "System Processes"
 $system_procs_checkbox.Width = 120
 $system_procs_checkbox.Height = 20
 $system_procs_checkbox.Location = New-Object System.Drawing.Point (10, 680)
+$system_procs_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($system_procs_checkbox)
 $Global:system_filter = "ProcessName LIKE '%'"
 $system_procs_checkbox.add_CheckedChanged({
@@ -246,6 +280,7 @@ $private_address_checkbox.Text = "Remove Internal IPs"
 $private_address_checkbox.Width = 200
 $private_address_checkbox.Height = 20
 $private_address_checkbox.Location = New-Object System.Drawing.Point (140, 680)
+$private_address_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($private_address_checkbox)
 $Global:private_address_filter = "RemoteAddress LIKE '%'"
 $private_address_checkbox.add_CheckedChanged({
@@ -272,6 +307,7 @@ $filter_label.Width = 1000
 $filter_label.Height = 20
 $filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress or RemoteAddress), State or enter Custom Filters such as `"PSComputerName LIKE 'COMPUTER*'`", %/* are wildcards"
 $filter_label.Location = New-Object System.Drawing.Point (10,620)
+$filter_label.Anchor = 'Left, Bottom'
 $NC.Controls.Add($filter_label)
 
 
@@ -289,7 +325,7 @@ $grid.DataSource=$nc_table
 $grid.ColumnHeadersVisible = $true
 #$grid.AutoSize = $true
 #$grid.AllowSorting = $true
-
+$grid.AutoSizeColumnsMode='Fill'
 $grid.ReadOnly = $true
 $grid.Size = '1500, 600'
 . ".\helpers\dataresize.ps1"

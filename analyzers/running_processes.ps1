@@ -27,7 +27,7 @@ $NC.BackColor = "#ffffff"
 
 # Build table if we fine network_connections.csv in evidence array
 [hashtable]$conn_table = @{}
-if ($evidence_array.Contains('network_connections.csv')) {
+if ($evidence_array.Contains('TEST_network_connections.csv')) {
     Write-Host "Found network_connections.csv, Joining Network Connections on PID (This can take a few minutes)"
     $l = 0
     $o = 0
@@ -64,7 +64,7 @@ $l = 0
 ForEach ($header in $nc_headers) {
     $nc_table.Columns.Add($header) | Out-Null
 }
-if ($evidence_array.Contains('network_connections.csv')) {
+if ($evidence_array.Contains('TEST_network_connections.csv')) {
     $nc_table.Columns.Add("LocalPort")  | Out-Null
     $nc_table.Columns.Add("RemotePort")  | Out-Null
     $nc_table.Columns.Add("RemoteAddress")  | Out-Null
@@ -100,22 +100,25 @@ Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
     $new_row.ExecutablePath = $row.ExecutablePath
     $new_row.CommandLine = $row.CommandLine
     $temp_key2 = $row.PSComputerName+$row.ProcessId
-    if ($conn_table.$temp_key2){
-        $new_row.LocalPort = $conn_table.$temp_key2[0]
-        $new_row.RemotePort = $conn_table.$temp_key2[1]
-        $new_row.RemoteAddress = $conn_table.$temp_key2[2]
-        $new_row.State = $conn_table.$temp_key2[3]
-        $new_row.StateTranslated = $state_translater[$conn_table.$temp_key2[3]]
-    } else {
-        $new_row.LocalPort = "N/A"
-        $new_row.RemotePort = "N/A"
-        $new_row.RemoteAddress = "N/A"
-        $new_row.State = "N/A"
-        $new_row.StateTranslated = "N/A"
-    }
-    if ($l -eq 100){
+
+
+    #if ($conn_table.$temp_key2){
+    #    $data = $conn_table.$temp_key2
+    #    $new_row.LocalPort = $data[0]
+    #    $new_row.RemotePort = $data[1]
+    #    $new_row.RemoteAddress = $data[2]
+    #    $new_row.State = $data[3]
+    #    $new_row.StateTranslated = $state_translater[$data[3]]
+    #} else {
+    #    $new_row.LocalPort = "N/A"
+    #    $new_row.RemotePort = "N/A"
+    #    $new_row.RemoteAddress = "N/A"
+    #    $new_row.State = "N/A"
+    #    $new_row.StateTranslated = "N/A"
+    #}
+    if ($l -eq 1000){
         $l = 0
-        $o += 100
+        $o += 1000
         Write-Host "Rows Added: "$o
     }
     $l++
@@ -124,6 +127,8 @@ Import-CSV -Path "$evidence_dir\running_processes.csv" | ForEach-Object {
 $FinishTime = Get-Date
 $x= $FinishTime - $StartTime
 Write-Host "Time Taken: "$x
+
+$nc_table.CaseSensitive = $false
 function ModFilter (){
     $filter_string = ""
     $i = 0
@@ -148,44 +153,20 @@ $process_name_filter.Add_TextChanged({
     $filter_table.procfilter = "(ProcessName LIKE '$text' OR CommandLine LIKE '$text')"
     ModFilter
 })
+$process_name_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($process_name_filter)
-
-# IP Address Filter
-$ipaddress_filter = New-Object System.Windows.Forms.TextBox
-$ipaddress_filter.Width = 140
-$ipaddress_filter.Height = 20
-$ipaddress_filter.Text = "IP Address Filter"
-$ipaddress_filter.Location = New-Object System.Drawing.Point (150, 640)
-$ipaddress_filter.Add_TextChanged({
-    $text = $ipaddress_filter.Text
-    $filter_table.ipfilter = "(LocalAddress LIKE '$text' OR RemoteAddress LIKE '$text')"
-    ModFilter
-})
-$NC.Controls.Add($ipaddress_filter)
-
-# State Filter
-$state_filter = New-Object System.Windows.Forms.TextBox
-$state_filter.Width = 40
-$state_filter.Height = 20
-$state_filter.Text = "State"
-$state_filter.Location = New-Object System.Drawing.Point (300, 640)
-$state_filter.Add_TextChanged({
-    $text = $state_filter.Text
-    $filter_table.statefilter = "State LIKE '$text'"
-    ModFilter
-})
-$NC.Controls.Add($state_filter)
 
 # Custom Filter
 $custom_filter = New-Object System.Windows.Forms.TextBox
 $custom_filter.Width = 140
 $custom_filter.Height = 20
 $custom_filter.Text = "Custom Filter"
-$custom_filter.Location = New-Object System.Drawing.Point (350, 640)
+$custom_filter.Location = New-Object System.Drawing.Point (150, 640)
 $custom_filter.Add_TextChanged({
     $filter_table.$customfilter = $custom_filter.Text
     $nc_table.DefaultView.RowFilter = $customfilter
 })
+$custom_filter.Anchor = 'Left, Bottom'
 $NC.Controls.Add($custom_filter)
 
 # Checkbox for Remote Administration Tools Process Name Filter
@@ -195,6 +176,7 @@ $rat_checkbox.Text = "Common RATs"
 $rat_checkbox.Width = 120
 $rat_checkbox.Height = 20
 $rat_checkbox.Location = New-Object System.Drawing.Point (10, 660)
+$rat_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($rat_checkbox)
 $rat_checkbox.add_CheckedChanged({
     if ($rat_checkbox.Checked){
@@ -223,6 +205,7 @@ $system_procs_checkbox.Text = "System Processes"
 $system_procs_checkbox.Width = 120
 $system_procs_checkbox.Height = 20
 $system_procs_checkbox.Location = New-Object System.Drawing.Point (10, 680)
+$system_procs_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($system_procs_checkbox)
 $Global:system_filter = "ProcessName LIKE '%'"
 $system_procs_checkbox.add_CheckedChanged({
@@ -278,7 +261,7 @@ $private_address_checkbox.Text = "Remove Internal IPs"
 $private_address_checkbox.Width = 200
 $private_address_checkbox.Height = 20
 $private_address_checkbox.Location = New-Object System.Drawing.Point (140, 680)
-$NC.Controls.Add($private_address_checkbox)
+#$NC.Controls.Add($private_address_checkbox)
 $Global:private_address_filter = "RemoteAddress LIKE '%'"
 $private_address_checkbox.add_CheckedChanged({
     if ($private_address_checkbox.Checked){
@@ -306,6 +289,7 @@ $abnormal_bin_location_checkbox.Text = "Abnormal Binary Location"
 $abnormal_bin_location_checkbox.Width = 200
 $abnormal_bin_location_checkbox.Height = 20
 $abnormal_bin_location_checkbox.Location = New-Object System.Drawing.Point (140, 660)
+$abnormal_bin_location_checkbox.Anchor = 'Left, Bottom'
 $NC.Controls.Add($abnormal_bin_location_checkbox)
 $Global:abnormal_bin_location_checkbox = "ProcessName LIKE '%'"
 $abnormal_bin_location_checkbox.add_CheckedChanged({
@@ -347,6 +331,7 @@ $filter_label.Width = 1000
 $filter_label.Height = 20
 $filter_label.Text = "Filter (Process Names or CommandLines) and (LocalAddress or RemoteAddress), State or enter Custom Filters such as `"PSComputerName LIKE 'COMPUTER*'`", %/* are wildcards"
 $filter_label.Location = New-Object System.Drawing.Point (10,620)
+$filter_label.Anchor = 'Left, Bottom'
 $NC.Controls.Add($filter_label)
 
 
@@ -357,20 +342,22 @@ $grid.Width = 1500
 $grid.Height = 600
 $grid.DataBindings.DefaultDataSourceUpdateMode = 0
 #$grid.HeaderForeColor = [System.Drawing.Color]::FromArgb(255,0,0,0)
-$grid.Name="TCP Connections"
+$grid.Name="Running Processes"
 $grid.TabIndex = 0
 $grid.Location = New-Object System.Drawing.Point (10,20)
 #$grid.DataMember=""
 $grid.DataSource=$nc_table
 $grid.ColumnHeadersVisible = $true
-#$grid.AutoSize = $true
+$grid.AutoSize = $true
 #$grid.AutoSizeColumnsMode = 'AllCells'
 #$grid.AllowSorting = $true
 $grid.ReadOnly = $true
 $grid.Size = '1500, 600'
-#$grid.AutoSizeColumnsMode='Fill'
-#$grid.AutoSizeRowsMode = 'AllCells'
+$grid.AutoSizeColumnsMode='Fill'
+$grid.ScrollBars = 'Both'
 $grid.Anchor = 'Left, Right, Top, Bottom'
+
+#$grid.AllowUserToResizeColumns = $true
 
 . ".\helpers\dataresize.ps1"
 #$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
