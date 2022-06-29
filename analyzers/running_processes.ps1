@@ -26,6 +26,8 @@ $NC.text = 'WMIH - Running Process Analyzer'
 $NC.BackColor = "#ffffff"
 
 # Build table if we fine network_connections.csv in evidence array
+
+# We have to approach this differently because HOSTNAME_PID won't work as a key since a single PID can have multiple connections open - what we can do is append each data to an array and simply display array instead of individual items?
 [hashtable]$conn_table = @{}
 if ($evidence_array.Contains('TEST_network_connections.csv')) {
     Write-Host "Found network_connections.csv, Joining Network Connections on PID (This can take a few minutes)"
@@ -129,13 +131,14 @@ $x= $FinishTime - $StartTime
 Write-Host "Time Taken: "$x
 
 $nc_table.CaseSensitive = $false
+
 function ModFilter (){
     $filter_string = ""
     $i = 0
     $filter_table.GetEnumerator() | ForEach-Object {if ($i -eq 0){$filter_string += "("+$_.Value+")"} else {$filter_string += " AND ("+$_.Value+")"}$i++}
+    Write-Host $filter_string
     $nc_table.DefaultView.RowFilter = $filter_string
 }
-
 
 
 $filter_list = [System.Collections.ArrayList]@()
@@ -296,27 +299,30 @@ $abnormal_bin_location_checkbox.add_CheckedChanged({
     if ($abnormal_bin_location_checkbox.Checked){
         $abnormal_bin_filter = ""
         $abnormal_bin_count = $system_binaries_with_locations.Count
-        Write-Host $abnormal_bin_count
+        #Write-Host $abnormal_bin_count
         $i = 1
         $system_binaries_with_locations.GetEnumerator() | ForEach-Object {
             $temp_key = $_.Key
-            Write-Host $i
+            #Write-Host $i
             # All items should be arrays
             $y = $_.Value.Count
             $z = 1
+            $abnormal_bin_filter += "("
             ForEach ($item in $_.Value){
                 $abnormal_bin_filter += "(ProcessName LIKE '$temp_key' AND NOT ExecutablePath LIKE '$item')"
                 if ($z -ne $y){
-                    $abnormal_bin_filter += " OR "
+                    $abnormal_bin_filter += " AND "
                 }
                 $z++
             }
             if ($i -ne $abnormal_bin_count){
-                    $abnormal_bin_filter += " OR "
+                $abnormal_bin_filter += ") OR "
+            }
+            else {
+                $abnormal_bin_filter += ")"
             }
             $i++
         }
-        Write-Host $abnormal_bin_filter
         $filter_table.abnormal_bin_filter = $abnormal_bin_filter
         ModFilter
     } else {
@@ -369,5 +375,5 @@ Enable-DataGridViewDoubleBuffer $grid
 
 . ".\helpers\console_manipulation.ps1"
 #Hide-Console
-
+Write-Host "Launching Window"
 [void]$NC.ShowDialog()
