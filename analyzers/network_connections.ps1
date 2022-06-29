@@ -276,24 +276,31 @@ $NC.Controls.Add($filter_label)
 
 
 #DataGrid GUI Element
-$grid = New-Object System.Windows.Forms.DataGrid
+$grid = New-Object System.Windows.Forms.DataGridView
 $grid.Width = 1500
 $grid.Height = 600
 $grid.DataBindings.DefaultDataSourceUpdateMode = 0
-$grid.HeaderForeColor = [System.Drawing.Color]::FromArgb(255,0,0,0)
+#$grid.HeaderForeColor = [System.Drawing.Color]::FromArgb(255,0,0,0)
 $grid.Name="TCP Connections"
 $grid.TabIndex = 0
 $grid.Location = New-Object System.Drawing.Point (10,20)
-$grid.DataMember=""
+#$grid.DataMember=""
 $grid.DataSource=$nc_table
 $grid.ColumnHeadersVisible = $true
-$grid.AutoSize = $true
-$grid.AllowSorting = $true
+#$grid.AutoSize = $true
+#$grid.AllowSorting = $true
+
 $grid.ReadOnly = $true
+$grid.Size = '1500, 600'
 . ".\helpers\dataresize.ps1"
-$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
-$grid.Add_VisibleChanged({AutoResizeColumns $grid})
+#$grid.Add_DatasourceChanged({AutoResizeColumns $grid})
+#$grid.Add_VisibleChanged({AutoResizeColumns $grid})
+
+$grid.Anchor = 'Left, Right, Top, Bottom'
 $NC.Controls.Add($grid)
+
+. ".\helpers\doublebuffer_grid.ps1"
+Enable-DataGridViewDoubleBuffer $grid
 
 . ".\helpers\console_manipulation.ps1"
 #Hide-Console
