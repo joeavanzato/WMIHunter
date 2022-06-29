@@ -24,6 +24,7 @@ $NC.ClientSize = '1600,800'
 $NC.text = 'WMIH - Network Connection Analyzer'
 $NC.BackColor = "#ffffff"
 [hashtable]$process_table = @{}
+
 if ($evidence_array.Contains('running_processes.csv')) {
     Write-Host "Found running_processes.csv, Joining Network Connections on PID (This can take a few minutes)"
     $l = 0
@@ -32,7 +33,7 @@ if ($evidence_array.Contains('running_processes.csv')) {
         $l++
         $temp_table = @($_.ProcessName, $_.ExecutablePath, $_.CommandLine)
         $temp_key = $_.PSComputerName+$_.ProcessId
-        $$process_table.$temp_key = $temp_table
+        $process_table.$temp_key = $temp_table
         if ($l -eq 1000){
             $l = 0
             $o += 1000
