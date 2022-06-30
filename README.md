@@ -1,38 +1,26 @@
 # Windows Management Instrumentation Hunter
-Utilize WMI via PowerShell to retrieve and filter information from remote hosts for IR/Hunting purposes.
 
-Data is saved to individual CSV files for each specified data source in the same folder that the script is run from.
+A PowerShell script utilizing asynchronous WMI queries to retrieve forensically useful information from remote hosts.
+
+## How does it work?
+
+A list of computers is provided to the program or dynamically gathered from Active Directory using an ADSISearcher.
+
+Data Sources are either selected in the GUI, at command-line or if none are specified, all are queried for (see Available Data Types below).
+
+For each detected hostname, a job is created in a PowerShell RunSpacePool which will operate asynchronously using the specified maximum threads - each job gathers remote data and appends it to the appropriate main CSV.
 
 WMIHunter requires Remote WMI Query permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
-
-Screenshot of Optional GUI
-
-![Main GUI](screens/main.png)
-
-Progress Bar During Execution
-
-![Progress Bar with Device Count](screens/inprog1.png)
-
-Progress Bar when Complete
-
-![Completed Bar](screens/completed.png)
-
-
-## Why?
-
-Good question - often times I found myself needing to hunt across an environment for a specific indicator - Process Names, Remote Addresses, Service Names, User Accounts, etc.
-
-Many of these investigations took place in low-maturity environments that did not have the capacity, support or logistics in-place to allow forwarding and searching of critical information from servers, endpoints, firewalls, Domain Controllers etc (tsk tsk).
-
-As such, I had a need to rapidly search an environment through readily-available mechanisms - WinRM is great for establishing PowerShell sessions with two major draw-backs - organizations often disable this on servers and it is not enabled by default on workstations.
-
-Therefore, I needed a solution that was typically enabled on as many endpoints as possible - enter WMI via DCOM.  You may yell at me 'Get-WmiObject is deprecated, use Get-CimInstance!' and you are probably correct, but by default Get-CimInstance uses WinRM/WSMAN and I found simply using Get-WmiObject to be a more elegant solution for the time being rather than forcing Get-CimInstance over DCOM.  It is likely I will transition this in the future.
-
-
 
 ### Instructions for Usage
 
 ```
+Option A
+- Run with All Components across Domain Computers
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/joeavanzato/WMIHunter/main/WMIHunter.ps1'))
+
+
+Option B 
 1. Clone/Download the Repository [git clone https://github.com/joeavanzato/WMIHunter]
 2. cd WMIHunter && powershell.exe .\wmihunter.ps1 -gui
 3. Select Data Types to Retrieve - some can take longer than others.
@@ -70,6 +58,30 @@ Therefore, I needed a solution that was typically enabled on as many endpoints a
 * network_shares - Retrieves information about shared resources.
 * startups - Retrieves information about commands run automatically at user logon.
 * sys_accounts - Retrieves information about system accounts.
+
+Screenshot of Optional GUI
+
+![Main GUI](screens/main.png)
+
+Progress Bar During Execution
+
+![Progress Bar with Device Count](screens/inprog1.png)
+
+Progress Bar when Complete
+
+![Completed Bar](screens/completed.png)
+
+
+## Why make this?
+
+Good question - often times I found myself needing to hunt across an environment for a specific indicator - Process Names, Remote Addresses, Service Names, User Accounts, etc.
+
+Many of these investigations took place in low-maturity environments that did not have the capacity, support or logistics in-place to allow forwarding and searching of critical information from servers, endpoints, firewalls, Domain Controllers etc (tsk tsk).
+
+As such, I had a need to rapidly search an environment through readily-available mechanisms - WinRM is great for establishing PowerShell sessions with two major draw-backs - organizations often disable this on servers and it is not enabled by default on workstations.
+
+Therefore, I needed a solution that was typically enabled on as many endpoints as possible - enter WMI via DCOM.  You may yell at me 'Get-WmiObject is deprecated, use Get-CimInstance!' and you are probably correct, but by default Get-CimInstance uses WinRM/WSMAN and I found simply using Get-WmiObject to be a more elegant solution for the time being rather than forcing Get-CimInstance over DCOM.  It is likely I will transition this in the future.
+
 
 ### Analyzer
 In the process of making this, I realized that I tend to take the same steps with the data in most situations - joining certain pieces together, looking for certain indicators or patterns, etc - so of course I will automate this in the form of WMIHAnalyzer.ps1, which is a GUI front-end designed to launch evidence-analysis and exploration scripts based on detected evidence.
