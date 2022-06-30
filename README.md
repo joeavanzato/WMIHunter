@@ -10,8 +10,11 @@ Data Sources are either selected in the GUI, at command-line or if none are spec
 
 For each detected hostname, a job is created in a PowerShell RunSpacePool which will operate asynchronously using the specified maximum threads - each job gathers remote data and appends it to the appropriate main CSV.
 
-WMIHunter requires Remote WMI Query permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
+## Requirements
 
+WMIHunter does not utilize WinRM/WSMAN but instead requires DCOM protocol and Remote WMI Query permissions for use - typically granted by default to any Local Admin but is also possible through other rights assignments [https://serverfault.com/questions/28520/which-permissions-rights-does-a-user-need-to-have-wmi-access-on-remote-machines]
+
+This is a design decision since often WinRM is not often enabled on workstations/laptops and is often disabled on servers in favor of other management utilities/applications, especially in larger networks.  DCOM is often enabled and available for remote communications on both servers and endpoints.  
 ### Instructions for Usage
 
 ```
