@@ -17,13 +17,12 @@ WMIHunter does not utilize WinRM/WSMAN but instead requires DCOM protocol and Re
 This is a design decision since often WinRM is not often enabled on workstations/laptops and is often disabled on servers in favor of other management utilities/applications, especially in larger networks.  DCOM is often enabled and available for remote communications on both servers and endpoints.  
 ### Instructions for Usage
 
+- Option A: Run with All Components across all Domain Computers
 ```
-Option A
-- Run with All Components across Domain Computers
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/joeavanzato/WMIHunter/main/WMIHunter.ps1'))
+powershell iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/joeavanzato/WMIHunter/main/WMIHunter.ps1'))
+```
 
-
-Option B 
+Option B
 1. Clone/Download the Repository [git clone https://github.com/joeavanzato/WMIHunter]
 2. cd WMIHunter && powershell.exe .\wmihunter.ps1 -gui
 3. Select Data Types to Retrieve - some can take longer than others.
@@ -32,6 +31,7 @@ Option B
 6. Click Start - once results are retrieved, it is possible to hit 'Analyze' to launch the sub-script for analyzing data which will present a GUI based on collected evidence
 7. Select buttons from Analyzer menu to open up data analysis/exploration windows for that particular piece of evidence.
 
+```
 # ARGUMENTS
 -gui = Launch with GUI
 -max_threads = Maximum threads to utilize for asynchronous operations (Optional)
@@ -93,6 +93,7 @@ You can launch the analyzer from the main WMIHunter.ps1 GUI or just by launching
 
 #### Currently Working
 * network_connections.csv (Also joins CommandLine, ProcessName, ExecutablePath from running_processes.csv if both are detected)
+* running_processes.csv - Provides some filtering capabilities such as removing common system processes, finding processes operating from outside their standard directory, filtering on common remote access tools, etc.
 
 Analyzer Main Screen
 
