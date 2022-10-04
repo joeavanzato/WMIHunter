@@ -164,7 +164,7 @@ function LoopAndStartJobs ([array] $Computers, [string] $script){
     Write-Host "Started Jobs:" $ComputerCount
 
     while ($Jobs.Runspace.IsCompleted -contains $false) {
-        if ($using_gui){
+        if ($gui){
             [System.Windows.Forms.Application]::DoEvents()
             $progress_bar.Value = $Configuration.FinishedCount/$ComputerCount*100
             $x = $Configuration.FinishedCount
@@ -176,7 +176,7 @@ function LoopAndStartJobs ([array] $Computers, [string] $script){
         }
 	    Sleep -Milliseconds 200
     }
-    if ($using_gui){
+    if ($gui){
             [System.Windows.Forms.Application]::DoEvents()
             $progress_bar.Value = 100
             $x = $Configuration.FinishedCount
